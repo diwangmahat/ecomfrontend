@@ -44,60 +44,65 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
-          {state.items.map((item) => (
-            <div
-              key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
-              className="bg-white border rounded-lg p-6"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="relative w-20 h-20 flex-shrink-0">
-                  <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.name}
-                    fill
-                    className="object-cover rounded-md"
-                  />
-                </div>
+          {state.items.map((item) => {
+            // Get the first image if it's an array, otherwise use the string
+            const itemImage = Array.isArray(item.image) ? item.image[0] : item.image
 
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    Size: {item.selectedSize} | Color: {item.selectedColor}
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">${item.price}</p>
-                </div>
+            return (
+              <div
+                key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
+                className="bg-white border rounded-lg p-6"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <Image
+                      src={itemImage || "/placeholder.svg"}
+                      alt={item.name}
+                      fill
+                      className="object-cover rounded-md"
+                    />
+                  </div>
 
-                <div className="flex items-center space-x-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      Size: {item.selectedSize} | Color: {item.selectedColor}
+                    </p>
+                    <p className="text-lg font-bold text-gray-900">${item.price}</p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="h-8 w-8"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="h-8 w-8"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="h-8 w-8"
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-500 hover:text-red-700"
                   >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="w-8 text-center">{item.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="h-8 w-8"
-                  >
-                    <Plus className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeItem(item.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Order Summary */}

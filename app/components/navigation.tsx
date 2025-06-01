@@ -22,22 +22,41 @@ import { useCart } from "../context/cart-context"
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const { state: cartState } = useCart()
   const { state: authState, logout } = useAuth()
   const { state: wishlistState } = useWishlist()
   const wishlistCount = wishlistState.items.length
 
   const totalItems = cartState.items.reduce((sum, item) => sum + item.quantity, 0)
+  const router = useRouter()
 
   const handleLogout = () => {
     logout()
     setIsMenuOpen(false)
   }
 
-  const router = useRouter()
-
   const handleGenderFilter = (gender: string) => {
     router.push(`/products?gender=${gender}`)
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSearchOpen(false)
+      setSearchQuery("")
+    }
+  }
+
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const formData = new FormData(e.target as HTMLFormElement)
+    const query = formData.get("search") as string
+    if (query?.trim()) {
+      router.push(`/products?keyword=${encodeURIComponent(query.trim())}`)
+      setIsMenuOpen(false)
+    }
   }
 
   const navigationItems = [
@@ -45,7 +64,7 @@ export default function Navigation() {
     { name: "Women", action: () => handleGenderFilter("Women") },
     { name: "Men", action: () => handleGenderFilter("Men") },
     { name: "Collections", href: "/products" },
-    { name: "Sale", href: "/products?sale=true" },
+    { name: "Sale", href: "/products?onSale=true" },
   ]
 
   return (
@@ -97,17 +116,22 @@ export default function Navigation() {
               {/* Search */}
               <div className="hidden md:flex items-center">
                 {isSearchOpen ? (
-                  <div className="flex items-center space-x-2">
+                  <form onSubmit={handleSearch} className="flex items-center space-x-2">
                     <Input
                       type="search"
-                      placeholder="Search..."
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-64 border-gray-300 focus:border-black"
                       autoFocus
                     />
+                    <Button type="submit" variant="ghost" size="icon">
+                      <Search className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)}>
                       <X className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </form>
                 ) : (
                   <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
                     <Search className="h-5 w-5" />
@@ -190,10 +214,15 @@ export default function Navigation() {
             <div className="md:hidden border-t border-gray-200 py-4">
               <div className="flex flex-col space-y-4">
                 {/* Mobile Search */}
-                <div className="relative">
+                <form onSubmit={handleMobileSearch} className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input type="search" placeholder="Search..." className="pl-10 pr-4 py-2 w-full" />
-                </div>
+                  <Input 
+                    type="search" 
+                    name="search"
+                    placeholder="Search products..." 
+                    className="pl-10 pr-4 py-2 w-full" 
+                  />
+                </form>
 
                 {/* Mobile Menu Items */}
                 {navigationItems.map((item) => (

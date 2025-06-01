@@ -41,9 +41,9 @@ interface Product {
   category: string;
   gender?: string;
   brand: string;
-  image: string;
-  size: string[] | null;
-  color: string[] | null;
+  image: string | null; // Changed to string | null to match backend
+  size: string | null;
+  color: string | null;
   countInStock: number;
   rating: number;
   featured: boolean;
@@ -59,7 +59,7 @@ interface ProductsState {
 }
 
 interface ProductForm {
-  id?: number; // Added optional id for edit form
+  id?: number;
   name: string;
   description: string;
   price: number;
@@ -148,8 +148,14 @@ export default function ProductsPage() {
   }, [page, searchTerm, router, logout, authState.token]);
 
   const filteredProducts = products.products.filter((product) =>
-    [product.name, product.category, product.brand, product.gender, product.size?.join(","), product.color?.join(",")]
-      .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
+    [
+      product.name,
+      product.category,
+      product.brand,
+      product.gender,
+      product.size,
+      product.color,
+    ].some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleAddProduct = async () => {
@@ -171,11 +177,11 @@ export default function ProductsPage() {
         ...newProduct,
         price: Number(newProduct.price),
         countInStock: Number(newProduct.countInStock),
-        size: newProduct.size ? newProduct.size.split(",").map((s: string) => s.trim()).filter((s: string) => s) : null,
-        color: newProduct.color ? newProduct.color.split(",").map((c: string) => c.trim()).filter((c: string) => c) : null,
+        size: newProduct.size || null,
+        color: newProduct.color || null,
         gender: newProduct.gender || null,
       };
-      console.log("Sending product payload:", payload); // Debug log
+      console.log("Sending product payload:", payload);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products`, {
         method: "POST",
         headers: {
@@ -197,7 +203,7 @@ export default function ProductsPage() {
         } catch {
           errorData = { message: `Server error: ${res.status}` };
         }
-        console.error("Backend error response:", errorData); // Debug log
+        console.error("Backend error response:", errorData);
         throw new Error(errorData.message || `Failed to add product: ${res.status}`);
       }
       const created = await res.json();
@@ -232,16 +238,16 @@ export default function ProductsPage() {
 
   const handleEditClick = (product: Product) => {
     setEditProduct({
-      id: product.id, // Include id
+      id: product.id,
       name: product.name,
       description: product.description,
       price: product.price,
       category: product.category,
       gender: product.gender || "",
       brand: product.brand,
-      image: product.image,
-      size: product.size?.join(",") || "",
-      color: product.color?.join(",") || "",
+      image: product.image || "",
+      size: product.size || "",
+      color: product.color || "",
       countInStock: product.countInStock,
       featured: product.featured,
     });
@@ -249,7 +255,7 @@ export default function ProductsPage() {
   };
 
   const handleUpdateProduct = async () => {
-    if (!editProduct || !editProduct.id) return; // Guard against missing id
+    if (!editProduct || !editProduct.id) return;
     const error = validateProduct(editProduct);
     if (error) {
       toast.error(error);
@@ -272,12 +278,12 @@ export default function ProductsPage() {
         gender: editProduct.gender || null,
         brand: editProduct.brand,
         image: editProduct.image,
-        size: editProduct.size ? editProduct.size.split(",").map((s: string) => s.trim()).filter((s: string) => s) : null,
-        color: editProduct.color ? editProduct.color.split(",").map((c: string) => c.trim()).filter((c: string) => c) : null,
+        size: editProduct.size || null,
+        color: editProduct.color || null,
         countInStock: Number(editProduct.countInStock),
         featured: editProduct.featured,
       };
-      console.log("Sending update payload:", payload); // Debug log
+      console.log("Sending update payload:", payload);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${editProduct.id}`, {
         method: "PUT",
         headers: {
@@ -299,7 +305,7 @@ export default function ProductsPage() {
         } catch {
           errorData = { message: `Server error: ${res.status}` };
         }
-        console.error("Backend error response:", errorData); // Debug log
+        console.error("Backend error response:", errorData);
         throw new Error(errorData.message || `Failed to update product: ${res.status}`);
       }
       const updated = await res.json();
@@ -470,22 +476,23 @@ export default function ProductsPage() {
                   <Input
                     value={newProduct.image}
                     onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                    placeholder="Enter full URL or path starting with / (e.g. /images/men-tshirt3.jpg)"
                   />
                 </div>
                 <div>
                   <Label>Size</Label>
                   <Input
-                    placeholder="Separate sizes with commas (e.g. S,M,L)"
                     value={newProduct.size}
                     onChange={(e) => setNewProduct({ ...newProduct, size: e.target.value })}
+                    placeholder="Enter size (e.g. S, M, L)"
                   />
                 </div>
                 <div>
                   <Label>Color</Label>
                   <Input
-                    placeholder="Separate colors with commas (e.g. red,blue,green)"
                     value={newProduct.color}
                     onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })}
+                    placeholder="Enter color (e.g. Red, Blue, Green)"
                   />
                 </div>
                 <div>
@@ -567,22 +574,23 @@ export default function ProductsPage() {
                     <Input
                       value={editProduct.image}
                       onChange={(e) => setEditProduct({ ...editProduct, image: e.target.value })}
+                      placeholder="Enter full URL or path starting with / (e.g. /images/men-tshirt3.jpg)"
                     />
                   </div>
                   <div>
                     <Label>Size</Label>
                     <Input
-                      placeholder="Separate sizes with commas (e.g. S,M,L)"
                       value={editProduct.size}
                       onChange={(e) => setEditProduct({ ...editProduct, size: e.target.value })}
+                      placeholder="Enter size (e.g. S, M, L)"
                     />
                   </div>
                   <div>
                     <Label>Color</Label>
                     <Input
-                      placeholder="Separate colors with commas (e.g. red,blue,green)"
                       value={editProduct.color}
                       onChange={(e) => setEditProduct({ ...editProduct, color: e.target.value })}
+                      placeholder="Enter color (e.g. Red, Blue, Green)"
                     />
                   </div>
                   <div>
@@ -654,7 +662,7 @@ export default function ProductsPage() {
                 <TableRow key={product.id}>
                   <TableCell className="flex items-center gap-2">
                     <Image
-                      src={product.image || "/placeholder.svg"}
+                      src={product.image ? (product.image.startsWith("/") || product.image.startsWith("http") ? product.image : `/${product.image}`) : "/placeholder.svg"}
                       alt={product.name}
                       width={40}
                       height={40}

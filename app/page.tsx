@@ -240,7 +240,7 @@ export default function HomePage() {
             <Link href="/products?gender=Women" className="group relative overflow-hidden">
               <div className="aspect-[4/5] relative">
                 <Image
-                  src="/images/women-shirt2.jpg"
+                  src="/images/women-shirt3.jpg"
                   alt="Women's Collection"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
